@@ -2,8 +2,7 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-import discord
-from discord.ext import commands
+from discord import Bot, Intents
 
 # Load environment variables
 load_dotenv()
@@ -23,8 +22,8 @@ from tickets import setup as setup_tickets
 from point_commands import setup as setup_points
 from info_uzvicnik import setup as setup_info
 
-intents = discord.Intents.all()
-bot = commands.Bot(command_prefix=None, intents=intents)  # slash commands only
+intents = Intents.all()
+bot = Bot(intents=intents)  # slash commands only
 
 async def main():
     # ---- Load async cogs ----
@@ -39,14 +38,13 @@ async def main():
     register_persistent_views(bot)
 
     # ---- Start webserver ----
-    start_webserver(PORT)
+    start_webserver()
 
     # ---- On ready ----
     @bot.event
     async def on_ready():
         print(f"Bot logged in as {bot.user} (ID: {bot.user.id})")
         print("Bot is ready!")
-        # Sync slash commands globally
         try:
             await bot.tree.sync()
             print("Slash commands synchronized.")
