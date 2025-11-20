@@ -1,4 +1,3 @@
-# utils/transcript.py
 import discord
 from datetime import datetime
 from io import StringIO
@@ -8,17 +7,19 @@ TRANSCRIPT_CHANNEL_ID = 1357314848253542570  # hardcoded destination channel
 async def generate_ticket_transcript(ticket_info, rewarded=False, closer_id=None):
     """
     Generates a transcript of a ticket channel and sends it to the hardcoded destination channel.
-    
-    Parameters:
-    - ticket_info: dict containing ticket details (requestor, helpers, category, embed_msg, etc.)
-    - rewarded: bool, whether helpers were rewarded
-    - closer_id: ID of the user who closed the ticket (optional)
     """
-    channel = ticket_info.get("embed_msg").channel if ticket_info.get("embed_msg") else None
+    channel_id = ticket_info.get("channel_id")
+    if not channel_id:
+        return
+
+    guild = ticket_info.get("guild")  # optional: pass guild if needed
+    if not guild:
+        return
+
+    channel = guild.get_channel(channel_id)
     if not channel:
         return
 
-    guild = channel.guild
     destination = guild.get_channel(TRANSCRIPT_CHANNEL_ID)
     if not destination:
         return
@@ -34,10 +35,9 @@ async def generate_ticket_transcript(ticket_info, rewarded=False, closer_id=None
         transcript_text += f"Closed by: <@{closer_id}>\n"
     transcript_text += "\n--- Messages ---\n\n"
 
-    # Fetch last 1000 messages
+    # Fetch messages safely
     try:
-        messages = await channel.history(limit=1000, oldest_first=True).flatten()
-        for msg in messages:
+        async for msg in channel.history(limit=1000, oldest_first=True):
             transcript_text += f"[{msg.created_at.strftime('%Y-%m-%d %H:%M:%S')}] {msg.author}: {msg.content}\n"
     except Exception:
         transcript_text += "Could not fetch messages from channel.\n"

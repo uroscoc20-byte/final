@@ -1,6 +1,5 @@
 import discord
 from discord.ext import commands
-from leaderboard import create_leaderboard_embed, LeaderboardView
 from database import db  # make sure this module exists
 
 ACCENT = 0x5865F2
@@ -54,30 +53,6 @@ class PointsModule(commands.Cog):
         embed.set_footer(text="Use /leaderboard to view rankings")
         await ctx.respond(embed=embed)
 
-    @commands.slash_command(name="leaderboard", description="Show points leaderboard")
-    async def leaderboard(
-        self,
-        ctx: discord.ApplicationContext,
-        page: discord.Option(int, "Page number", required=False, default=1),
-    ):
-        try:
-            rows = await db.get_leaderboard()
-        except Exception:
-            await ctx.respond("Failed to load leaderboard.", ephemeral=True)
-            return
-
-        if not rows:
-            await ctx.respond("Leaderboard is empty.", ephemeral=True)
-            return
-
-        per_page = 10
-        total_pages = max(1, (len(rows) + per_page - 1) // per_page)
-        page = max(1, min(page, total_pages))
-
-        embed = await create_leaderboard_embed(page=page, per_page=per_page)
-        view = LeaderboardView(page, total_pages, per_page)
-        await ctx.respond(embed=embed, view=view)
-
     # ----------------- ADMIN COMMANDS -----------------
     def _check_admin(self, ctx):
         if not ctx.user.guild_permissions.administrator:
@@ -88,7 +63,7 @@ class PointsModule(commands.Cog):
         try:
             self._check_admin(ctx)
             await db.reset_points()
-            await ctx.respond("✅ Leaderboard has been reset!")
+            await ctx.respond("✅ All points have been reset!")
         except commands.CheckFailure as e:
             await ctx.respond(str(e), ephemeral=True)
 
@@ -182,5 +157,5 @@ class PointsModule(commands.Cog):
             await ctx.respond("Failed to remove user.", ephemeral=True)
 
 
-async def setup(bot):
-    bot.add_cog(PointsModule(bot))  # <- no await
+def setup(bot):
+    bot.add_cog(PointsModule(bot))

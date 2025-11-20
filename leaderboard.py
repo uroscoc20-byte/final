@@ -79,6 +79,6 @@ class Leaderboard(commands.Cog):
         await ctx.respond(embed=embed, view=view)
 
 
-async def setup(bot: commands.Bot):
-    # optionally do async pre-loads here
-    bot.add_cog(Leaderboard(bot))  # no await
+def setup(bot: commands.Bot):
+    bot.add_cog(Leaderboard(bot))
+
