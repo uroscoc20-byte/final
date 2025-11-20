@@ -26,12 +26,12 @@ intents = Intents.all()
 bot = Bot(intents=intents)  # slash commands only
 
 async def main():
-    # ---- Load async cogs ----
-    await setup_leaderboard(bot)
-    await setup_tickets(bot)
-    await setup_points(bot)
+    # ---- Load cogs (they are regular setup functions, no await needed) ----
+    setup_leaderboard(bot)
+    setup_tickets(bot)
+    setup_points(bot)
 
-    # ---- Load sync cogs ----
+    # ---- Load sync cog ----
     setup_info(bot)
 
     # ---- Register persistent views ----
