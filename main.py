@@ -6,10 +6,10 @@ from discord.ext import commands
 # ---- Import your modules ----
 from verification import setup as setup_verification, VerificationPanelView, VerificationTicketView
 from point_commands import setup as setup_points
-from leaderboard import setup as setup_leaderboard  # assuming leaderboard.py has a setup() to add cog
+from leaderboard import setup as setup_leaderboard  # leaderboard.py with setup() cog
 from tickets import setup as setup_tickets
-# from roles import setup as setup_roles  <-- removed, roles.py has no setup()
-from transcript import setup as setup_transcript
+# roles.py has no setup() — we import helpers directly in modules when needed
+from utils.transcript import generate_ticket_transcript  # utility function
 from info_uzvicnik import setup as setup_info
 from persistent_views import setup as setup_persistent_views
 from webserver import setup as setup_webserver
@@ -25,8 +25,6 @@ setup_verification(bot)
 setup_points(bot)
 setup_leaderboard(bot)
 setup_tickets(bot)
-# setup_roles(bot)  <-- removed
-setup_transcript(bot)
 setup_info(bot)
 setup_persistent_views(bot)
 setup_webserver(bot)
