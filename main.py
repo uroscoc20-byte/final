@@ -3,56 +3,64 @@ import os
 import discord
 from discord.ext import commands
 
-# ---- Import your modules ----
-from verification import setup as setup_verification, VerificationPanelView, VerificationTicketView
-from point_commands import setup as setup_points
-from leaderboard import setup as setup_leaderboard  # leaderboard.py with setup() cog
-from tickets import setup as setup_tickets
-# roles.py has no setup() — we import helpers directly in modules when needed
-from utils import generate_ticket_transcript  # utility function
-from info_uzvicnik import setup as setup_info
-from persistent_views import setup as setup_persistent_views
-from webserver import setup as setup_webserver
-
-# ---- Bot intents ----
 intents = discord.Intents.all()
 
-# ---- Create bot (slash commands only) ----
-bot = commands.Bot(command_prefix=None, intents=intents)  # No text prefix, slash commands only
+bot = commands.Bot(command_prefix="!", intents=intents)  # prefix only for exceptions
 
-# ---- Load all modules ----
-setup_verification(bot)
-setup_points(bot)
-setup_leaderboard(bot)
-setup_tickets(bot)
-setup_info(bot)
-setup_persistent_views(bot)
-setup_webserver(bot)
+# ----------------------------
+# Load all cogs normally
+# ----------------------------
+INITIAL_COGS = [
+    "verification",
+    "tickets",
+    "point_commands",
+    "leaderboard",
+    "info_uzvicnik"
+]
 
-# ---- Persistent views registration ----
 @bot.event
 async def on_ready():
-    # Verification persistent views
+    # Register global persistent views (only once)
+    from verification import VerificationPanelView, VerificationTicketView
+    from tickets import TicketPanelView
+    from leaderboard import LeaderboardView
+
     bot.add_view(VerificationPanelView(None))
     bot.add_view(VerificationTicketView())
 
-    # If other modules have persistent views, add them here
-    # Example:
-    # bot.add_view(SomeOtherPersistentView())
+    bot.add_view(TicketPanelView([
+        {"name": "UltraSpeaker Express"},
+        {"name": "Ultra Gramiel Express"},
+        {"name": "GrimChallenge Express"},
+        {"name": "Daily Temple Express"},
+        {"name": "Daily 4-Man Express"},
+        {"name": "Daily 7-Man Express"},
+        {"name": "Weekly Ultra Express"}
+    ]))
 
-    # Sync slash commands globally
-    try:
-        await bot.tree.sync()
-        print("Slash commands synchronized.")
-    except Exception as e:
-        print("Slash sync error:", e)
+    bot.add_view(LeaderboardView(current_page=1, per_page=10))
 
-    print(f"Bot logged in as {bot.user} (ID: {bot.user.id})")
-    print("Bot is ready!")
+    # Sync slash commands
+    await bot.tree.sync()
+    print("Slash commands synced.")
+    print(f"Logged in as {bot.user}")
 
-# ---- Run bot ----
-TOKEN = os.getenv("DISCORD_BOT_TOKEN")
-if not TOKEN:
-    raise RuntimeError("Discord bot token not found in environment variable DISCORD_BOT_TOKEN")
 
-bot.run(TOKEN)
+async def load_cogs():
+    for cog in INITIAL_COGS:
+        try:
+            await bot.load_extension(cog)
+            print(f"Loaded cog: {cog}")
+        except Exception as e:
+            print(f"Failed to load {cog}: {e}")
+
+
+async def start_bot():
+    await load_cogs()
+    TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+    await bot.start(TOKEN)
+
+
+if __name__ == "__main__":
+    import asyncio
+    asyncio.run(start_bot())
