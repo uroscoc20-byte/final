@@ -80,4 +80,5 @@ class Leaderboard(commands.Cog):
 
 
 async def setup(bot: commands.Bot):
-    await bot.add_cog(Leaderboard(bot))
+    # optionally do async pre-loads here
+    bot.add_cog(Leaderboard(bot))  # no await
