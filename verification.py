@@ -1,7 +1,7 @@
 # verification.py
 import discord
 from discord.ext import commands
-from discord.ui import View, Button, Modal, InputText
+from discord.ui import View, Modal, InputText
 from datetime import datetime
 from database import db
 
@@ -21,22 +21,21 @@ class VerificationTicketView(View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.red, custom_id="verify_close", emoji="🗑️")
-async def close_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
-    roles = await db.get_roles()
-    staff_id = roles.get("staff") if roles else None
-    admin_id = roles.get("admin") if roles else None
+    async def close_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+        roles = await db.get_roles()
+        staff_id = roles.get("staff") if roles else None
+        admin_id = roles.get("admin") if roles else None
 
-    is_admin = admin_id and any(r.id == admin_id for r in interaction.user.roles)
-    is_staff = interaction.user.guild_permissions.administrator or (
-        staff_id and any(r.id == staff_id for r in interaction.user.roles)
-    )
-
-    if not (is_admin or is_staff):
-        await interaction.response.send_message(
-            "Only staff/admin can close verification tickets.", ephemeral=True
+        is_admin = admin_id and any(r.id == admin_id for r in interaction.user.roles)
+        is_staff = interaction.user.guild_permissions.administrator or (
+            staff_id and any(r.id == staff_id for r in interaction.user.roles)
         )
-        return
 
+        if not (is_admin or is_staff):
+            await interaction.response.send_message(
+                "Only staff/admin can close verification tickets.", ephemeral=True
+            )
+            return
 
         await interaction.response.send_message("Deleting verification channel...", ephemeral=True)
         try:
@@ -86,11 +85,7 @@ class VerificationModal(Modal):
             )
         if admin_role:
             overwrites[admin_role] = discord.PermissionOverwrite(
-                view_channel=True,
-                send_messages=True,
-                read_message_history=True,
-                manage_messages=True,
-                manage_channels=True,
+                view_channel=True, send_messages=True, read_message_history=True, manage_messages=True, manage_channels=True
             )
 
         # Safe channel name
@@ -122,7 +117,7 @@ class VerificationModal(Modal):
         embed.add_field(name="Invited by", value=invited_by, inline=False)
         embed.set_footer(text="Please wait for a staff member to review your request.")
 
-        # Ping user + staff FIRST so ping always works
+        # Ping staff first
         staff_ping = ""
         if staff_role:
             staff_ping = staff_role.mention
@@ -130,7 +125,6 @@ class VerificationModal(Modal):
             staff_ping = admin_role.mention
 
         await ch.send(content=f"{interaction.user.mention} {staff_ping}")
-
         msg = await ch.send(embed=embed, view=VerificationTicketView())
         try:
             await msg.pin()
