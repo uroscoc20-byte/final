@@ -180,5 +180,6 @@ class VerificationModule(commands.Cog):
         await ctx.respond(embed=embed, view=view)
 
 
-def setup(bot):
-    bot.add_cog(VerificationModule(bot))
+# ✅ FIXED PY-CORD SETUP
+async def setup(bot):
+    await bot.add_cog(VerificationModule(bot))

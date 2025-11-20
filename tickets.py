@@ -375,5 +375,6 @@ class TicketModule(commands.Cog):
         await ctx.respond(f"✅ {member.mention} has been removed from this ticket.", ephemeral=True)
 
 
-def setup(bot):
-    bot.add_cog(TicketModule(bot))
+async def setup(bot):
+    await bot.add_cog(TicketModule(bot))
+
