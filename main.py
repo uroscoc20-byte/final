@@ -2,7 +2,8 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from discord import Bot, Intents
+from discord.ext.commands import Bot
+from discord import Intents
 
 # Load environment variables
 load_dotenv()
@@ -23,13 +24,25 @@ from point_commands import setup as setup_points
 from info_uzvicnik import setup as setup_info
 
 intents = Intents.all()
-bot = Bot(intents=intents)  # slash commands only
+bot = Bot(command_prefix="!", intents=intents)  # needs a prefix for commands.Bot
 
 async def main():
-    # ---- Load cogs (they are regular setup functions, no await needed) ----
-    setup_leaderboard(bot)
-    setup_tickets(bot)
-    setup_points(bot)
+    # ---- Load async cogs ----
+    # If setup functions are async, await them
+    if asyncio.iscoroutinefunction(setup_leaderboard):
+        await setup_leaderboard(bot)
+    else:
+        setup_leaderboard(bot)
+
+    if asyncio.iscoroutinefunction(setup_tickets):
+        await setup_tickets(bot)
+    else:
+        setup_tickets(bot)
+
+    if asyncio.iscoroutinefunction(setup_points):
+        await setup_points(bot)
+    else:
+        setup_points(bot)
 
     # ---- Load sync cog ----
     setup_info(bot)
