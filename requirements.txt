@@ -1,6 +1,6 @@
 py-cord==2.6.0
 aiosqlite>=0.20.0
-Flask>=2.3.4,<3.0.0
+Flask>=2.2.5,<2.3.0
 firebase-admin>=6.6.0,<7.0.0
 google-cloud-firestore>=2.15.0,<3.0.0
 python-dotenv>=1.0.0
