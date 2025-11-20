@@ -1,7 +1,7 @@
 # persistent_views.py
 from verification import VerificationPanelView, VerificationTicketView
 from tickets import TicketPanelView
-from leaderboard import LeaderboardView, LeaderboardRefreshButton
+from leaderboard import LeaderboardView
 
 def register_persistent_views(bot):
     """
@@ -24,6 +24,5 @@ def register_persistent_views(bot):
         {"name": "Weekly Ultra Express"}
     ]))
 
-    # --- Leaderboard buttons view ---
-    bot.add_view(LeaderboardView(current_page=1, total_pages=1, per_page=10))
-    bot.add_view(LeaderboardRefreshButton())
+    # --- Leaderboard view (includes refresh button) ---
+    bot.add_view(LeaderboardView(current_page=1, per_page=10))
