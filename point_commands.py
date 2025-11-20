@@ -183,5 +183,4 @@ class PointsModule(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(PointsModule(bot))
-
+    bot.add_cog(PointsModule(bot))  # <- no await
