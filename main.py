@@ -2,9 +2,10 @@
 import discord
 from discord.ext import commands
 from leaderboard import Leaderboard, LeaderboardView
-from points import PointsModule
+from point_commands import PointsModule
 from verification import VerificationModule, VerificationPanelView
 import os
+
 
 TOKEN = os.environ.get("DISCORD_TOKEN")  # set your bot token
 intents = discord.Intents.all()
