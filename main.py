@@ -8,7 +8,7 @@ from verification import setup as setup_verification, VerificationPanelView, Ver
 from point_commands import setup as setup_points
 from leaderboard import setup as setup_leaderboard  # assuming leaderboard.py has a setup() to add cog
 from tickets import setup as setup_tickets
-from roles import setup as setup_roles
+# from roles import setup as setup_roles  <-- removed, roles.py has no setup()
 from transcript import setup as setup_transcript
 from info_uzvicnik import setup as setup_info
 from persistent_views import setup as setup_persistent_views
@@ -25,7 +25,7 @@ setup_verification(bot)
 setup_points(bot)
 setup_leaderboard(bot)
 setup_tickets(bot)
-setup_roles(bot)
+# setup_roles(bot)  <-- removed
 setup_transcript(bot)
 setup_info(bot)
 setup_persistent_views(bot)
