@@ -27,7 +27,7 @@ class VerificationTicketView(View):
         admin_id = roles.get("admin") if roles else None
 
         is_admin = admin_id and any(r.id == admin_id for r in interaction.user.roles)
-        is_staff = interaction.user.guild_permissions.adminis­trator or (
+        is_staff = interaction.user.guild_permissions.administrator or (
             staff_id and any(r.id == staff_id for r in interaction.user.roles)
         )
 
