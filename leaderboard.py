@@ -26,16 +26,15 @@ async def create_leaderboard_embed(page: int = 1, per_page: int = 10) -> discord
         description=description,
         color=ACCENT,
     )
-    embed.set_footer(text=f"📄 Page {page}/{total_pages}")
+    embed.set_footer(text=f"📄 Page {page}/{max(1, total_pages)}")
     return embed
-
 
 class LeaderboardView(discord.ui.View):
     def __init__(self, current_page: int = 1, per_page: int = 10):
         super().__init__(timeout=None)
         self.current_page = current_page
         self.per_page = per_page
-        self.total_pages = 1  # will be updated when first refresh happens
+        self.total_pages = 1
 
     async def update_total_pages(self):
         rows = await db.get_leaderboard()
@@ -67,7 +66,6 @@ class LeaderboardView(discord.ui.View):
         embed = await create_leaderboard_embed(self.current_page, self.per_page)
         await interaction.response.edit_message(embed=embed, view=self)
 
-
 class Leaderboard(commands.Cog):
     def __init__(self, bot: commands.Bot):
         self.bot = bot
@@ -78,7 +76,5 @@ class Leaderboard(commands.Cog):
         view = LeaderboardView(current_page=1, per_page=10)
         await ctx.respond(embed=embed, view=view)
 
-
-def setup(bot: commands.Bot):
-    bot.add_cog(Leaderboard(bot))
-
+async def setup(bot):
+    await bot.add_cog(Leaderboard(bot))

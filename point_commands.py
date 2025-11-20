@@ -157,5 +157,7 @@ class PointsModule(commands.Cog):
             await ctx.respond("Failed to remove user.", ephemeral=True)
 
 
-def setup(bot):
+# ----------------- SETUP FUNCTION -----------------
+def setup(bot: commands.Bot):
+    """This is called to add the cog. Do NOT await it in main.py"""
     bot.add_cog(PointsModule(bot))
