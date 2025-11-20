@@ -2,8 +2,7 @@
 import os
 import asyncio
 from dotenv import load_dotenv
-from discord.ext.commands import Bot
-from discord import Intents
+from discord import Bot, Intents
 
 # Load environment variables
 load_dotenv()
@@ -13,7 +12,7 @@ PORT = int(os.getenv("PORT", 8080))
 if not TOKEN:
     raise RuntimeError("DISCORD_BOT_TOKEN not set in .env")
 
-# Import your modules
+# ---- Import your modules ----
 from verification import VerificationPanelView, VerificationTicketView
 from persistent_views import register_persistent_views
 from webserver import start as start_webserver
@@ -23,28 +22,18 @@ from tickets import setup as setup_tickets
 from point_commands import setup as setup_points
 from info_uzvicnik import setup as setup_info
 
+# ---- Intents and Bot ----
 intents = Intents.all()
-bot = Bot(command_prefix="!", intents=intents)  # needs a prefix for commands.Bot
+bot = Bot(intents=intents)  # Slash commands only
 
+# ---- Async main ----
 async def main():
     # ---- Load async cogs ----
-    # If setup functions are async, await them
-    if asyncio.iscoroutinefunction(setup_leaderboard):
-        await setup_leaderboard(bot)
-    else:
-        setup_leaderboard(bot)
+    await setup_leaderboard(bot)
+    await setup_tickets(bot)
+    await setup_points(bot)
 
-    if asyncio.iscoroutinefunction(setup_tickets):
-        await setup_tickets(bot)
-    else:
-        setup_tickets(bot)
-
-    if asyncio.iscoroutinefunction(setup_points):
-        await setup_points(bot)
-    else:
-        setup_points(bot)
-
-    # ---- Load sync cog ----
+    # ---- Load sync cogs ----
     setup_info(bot)
 
     # ---- Register persistent views ----
@@ -64,7 +53,7 @@ async def main():
         except Exception as e:
             print("Slash sync error:", e)
 
-    # ---- Run bot ----
+    # ---- Start bot ----
     await bot.start(TOKEN)
 
 # ---- Entry point ----
