@@ -1,3 +1,4 @@
+import os
 import discord
 from discord.ext import commands
 
@@ -8,12 +9,12 @@ from verification import setup as setup_verification, VerificationPanelView, Ver
 intents = discord.Intents.all()
 
 # ---- Create bot (slash commands only) ----
-bot = commands.Bot(command_prefix=None, intents=intents)  # No text prefix, slash commands only
+bot = commands.Bot(command_prefix=None, intents=intents)  # No text prefix
 
 # ---- Load cogs ----
 setup_verification(bot)
 
-# ---- Placeholder for future cogs (tickets, points, etc.) ----
+# ---- Placeholder for future cogs (tickets, points, leaderboard, etc.) ----
 # Example:
 # from tickets import setup as setup_tickets
 # setup_tickets(bot)
@@ -21,7 +22,7 @@ setup_verification(bot)
 # ---- Persistent views registration ----
 @bot.event
 async def on_ready():
-    # Persistent verification buttons
+    # Persistent verification views
     bot.add_view(VerificationPanelView(None))
     bot.add_view(VerificationTicketView())
 
@@ -29,19 +30,22 @@ async def on_ready():
     # bot.add_view(TicketCategoryView())
     # bot.add_view(PointsPanelView())
 
-    # Sync slash commands
-    await bot.tree.sync()
+    # Sync slash commands globally
+    try:
+        synced = await bot.tree.sync()
+        print(f"Synchronized {len(synced)} slash commands.")
+    except Exception as e:
+        print("Slash sync error:", e)
 
-    print(f"Bot logged in as {bot.user}")
+    print(f"Bot logged in as {bot.user} (ID: {bot.user.id})")
 
 # ---- Optional: Text command exceptions ----
-# Example if you want some old text commands like !proof to work
+# Example if you want old text commands like !proof
 # @bot.command()
 # async def proof(ctx):
 #     await ctx.send("Your proof command here")
 
-import os
-
+# ---- Run bot ----
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
 if not TOKEN:
     raise RuntimeError("Discord bot token not found in environment variable DISCORD_BOT_TOKEN")
