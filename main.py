@@ -1,49 +1,56 @@
+# main.py
 import os
 import discord
 from discord.ext import commands
 
-# ---- Import verification module ----
+# ---- Import your modules ----
 from verification import setup as setup_verification, VerificationPanelView, VerificationTicketView
+from point_commands import setup as setup_points
+from leaderboard import setup as setup_leaderboard  # assuming leaderboard.py has a setup() to add cog
+from tickets import setup as setup_tickets
+from roles import setup as setup_roles
+from transcript import setup as setup_transcript
+from info_uzvicnik import setup as setup_info
+from persistent_views import setup as setup_persistent_views
+from webserver import setup as setup_webserver
 
 # ---- Bot intents ----
 intents = discord.Intents.all()
 
 # ---- Create bot (slash commands only) ----
-bot = commands.Bot(command_prefix=None, intents=intents)  # No text prefix
+bot = commands.Bot(command_prefix=None, intents=intents)  # No text prefix, slash commands only
 
-# ---- Load cogs ----
+# ---- Load all modules ----
 setup_verification(bot)
-
-# ---- Placeholder for future cogs (tickets, points, leaderboard, etc.) ----
-# Example:
-# from tickets import setup as setup_tickets
-# setup_tickets(bot)
+setup_points(bot)
+setup_leaderboard(bot)
+setup_tickets(bot)
+setup_roles(bot)
+setup_transcript(bot)
+setup_info(bot)
+setup_persistent_views(bot)
+setup_webserver(bot)
 
 # ---- Persistent views registration ----
 @bot.event
 async def on_ready():
-    # Persistent verification views
+    # Verification persistent views
     bot.add_view(VerificationPanelView(None))
     bot.add_view(VerificationTicketView())
 
-    # Add future persistent views here:
-    # bot.add_view(TicketCategoryView())
-    # bot.add_view(PointsPanelView())
+    # If other modules have persistent views, add them here
+    # Example:
+    # bot.add_view(SomeOtherPersistentView())
 
     # Sync slash commands globally
     try:
-        synced = await bot.tree.sync()
-        print(f"Synchronized {len(synced)} slash commands.")
+        await bot.tree.sync()
+        print("Slash commands synchronized.")
     except Exception as e:
         print("Slash sync error:", e)
 
     print(f"Bot logged in as {bot.user} (ID: {bot.user.id})")
-
-# ---- Optional: Text command exceptions ----
-# Example if you want old text commands like !proof
-# @bot.command()
-# async def proof(ctx):
-#     await ctx.send("Your proof command here")
+    print("Bot is ready!")
 
 # ---- Run bot ----
 TOKEN = os.getenv("DISCORD_BOT_TOKEN")
