@@ -3,10 +3,11 @@ from verification import VerificationPanelView, VerificationTicketView
 from tickets import TicketPanelView
 from leaderboard import LeaderboardView
 
+
 def register_persistent_views(bot):
     """
     Register all persistent views on bot startup.
-    These views will survive bot restarts and keep buttons functional.
+    These views survive bot restarts and keep buttons active.
     """
 
     # --- Verification views ---
@@ -24,5 +25,14 @@ def register_persistent_views(bot):
         {"name": "Weekly Ultra Express"}
     ]))
 
-    # --- Leaderboard view (includes refresh button) ---
+    # --- Leaderboard view ---
     bot.add_view(LeaderboardView(current_page=1, per_page=10))
+
+
+# REQUIRED BY PY-CORD EXTENSION SYSTEM
+async def setup(bot):
+    """
+    Called automatically by bot.load_extension().
+    Makes sure persistent views are registered on startup.
+    """
+    register_persistent_views(bot)
