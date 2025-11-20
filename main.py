@@ -46,6 +46,7 @@ async def main():
     async def on_ready():
         print(f"Bot logged in as {bot.user} (ID: {bot.user.id})")
         print("Bot is ready!")
+        # Sync slash commands globally
         try:
             await bot.tree.sync()
             print("Slash commands synchronized.")
