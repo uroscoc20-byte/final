@@ -7,7 +7,7 @@ from verification import VerificationModule, VerificationPanelView
 import os
 
 
-TOKEN = os.environ.get("DISCORD_TOKEN")  # set your bot token
+TOKEN = os.environ.get("DISCORD_BOT_TOKEN")
 intents = discord.Intents.all()
 bot = commands.Bot(command_prefix="!", intents=intents)
 
