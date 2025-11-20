@@ -9,7 +9,7 @@ from point_commands import setup as setup_points
 from leaderboard import setup as setup_leaderboard  # leaderboard.py with setup() cog
 from tickets import setup as setup_tickets
 # roles.py has no setup() — we import helpers directly in modules when needed
-from utils.transcript import generate_ticket_transcript  # utility function
+from utils import generate_ticket_transcript  # utility function
 from info_uzvicnik import setup as setup_info
 from persistent_views import setup as setup_persistent_views
 from webserver import setup as setup_webserver
