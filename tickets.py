@@ -376,5 +376,4 @@ class TicketModule(commands.Cog):
 
 
 async def setup(bot):
-    await bot.add_cog(TicketModule(bot))
-
+    bot.add_cog(TicketModule(bot))  # remove `await`
