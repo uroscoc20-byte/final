@@ -40,5 +40,10 @@ async def on_ready():
 # async def proof(ctx):
 #     await ctx.send("Your proof command here")
 
-# ---- Run bot ----
-bot.run("YOUR_TOKEN_HERE")
+import os
+
+TOKEN = os.getenv("DISCORD_BOT_TOKEN")
+if not TOKEN:
+    raise RuntimeError("Discord bot token not found in environment variable DISCORD_BOT_TOKEN")
+
+bot.run(TOKEN)

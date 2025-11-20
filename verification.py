@@ -21,21 +21,22 @@ class VerificationTicketView(View):
         super().__init__(timeout=None)
 
     @discord.ui.button(label="Close", style=discord.ButtonStyle.red, custom_id="verify_close", emoji="🗑️")
-    async def close_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
-        roles = await db.get_roles()
-        staff_id = roles.get("staff") if roles else None
-        admin_id = roles.get("admin") if roles else None
+async def close_btn(self, button: discord.ui.Button, interaction: discord.Interaction):
+    roles = await db.get_roles()
+    staff_id = roles.get("staff") if roles else None
+    admin_id = roles.get("admin") if roles else None
 
-        is_admin = admin_id and any(r.id == admin_id for r in interaction.user.roles)
-        is_staff = interaction.user.guild_permissions.administrator or (
-            staff_id and any(r.id == staff_id for r in interaction.user.roles)
+    is_admin = admin_id and any(r.id == admin_id for r in interaction.user.roles)
+    is_staff = interaction.user.guild_permissions.administrator or (
+        staff_id and any(r.id == staff_id for r in interaction.user.roles)
+    )
+
+    if not (is_admin or is_staff):
+        await interaction.response.send_message(
+            "Only staff/admin can close verification tickets.", ephemeral=True
         )
+        return
 
-        if not (is_admin or is_staff):
-            await interaction.response.send_message(
-                "Only staff/admin can close verification tickets.", ephemeral=True
-            )
-            return
 
         await interaction.response.send_message("Deleting verification channel...", ephemeral=True)
         try:
