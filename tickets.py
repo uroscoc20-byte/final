@@ -1,11 +1,13 @@
 import re
+import random
 import discord
 from discord.ext import commands
 from discord.ui import View, Button, Modal, InputText
-import random
+
 from roles import is_admin, is_staff, is_helper, is_restricted
 from utils import bot_can_manage_channels, generate_ticket_transcript
 from config import DEFAULT_HELPER_SLOTS, DEFAULT_POINT_VALUES
+from database import db  # make sure your db supports async get_points/set_points
 
 # Active tickets
 active_tickets = {}
@@ -101,9 +103,8 @@ class TicketModal(Modal):
             for boss in WEEKLY_ULTRA_BOSSES:
                 embed.add_field(name=boss, value=f"/join {boss}-{number}", inline=False)
 
-        # Create ticket buttons view
+        # Ticket buttons view (Close button starts disabled)
         view = TicketActionView(interaction.user.id)
-
         await ch.send(embed=embed, view=view)
 
         # Store ticket info
@@ -122,14 +123,6 @@ class TicketModal(Modal):
         await interaction.response.send_message(f"✅ Ticket created: {ch.mention}", ephemeral=True)
 
 # ---------------- TICKET BUTTONS VIEW ----------------
-class TicketActionView(View):
-    def __init__(self, requestor_id):
-        super().__init__(timeout=None)
-        self.requestor_id = requestor_id
-        self.add_item(JoinButton())
-        self.add_item(SubmitProofButton(requestor_id))
-        self.add_item(CloseTicketButton(requestor_id, disabled=True))  # starts disabled
-
 class JoinButton(Button):
     def __init__(self):
         super().__init__(label="Join Ticket", style=discord.ButtonStyle.green, custom_id="join_ticket")
@@ -157,28 +150,27 @@ class JoinButton(Button):
         except Exception:
             pass
 
+        # Update the ticket embed to reflect new helpers
+        async for msg in interaction.channel.history(limit=20):
+            if msg.embeds:
+                embed = msg.embeds[0]
+                if "Helpers:" in embed.description:
+                    helpers = [h for h in ticket_info["helpers"] if h]
+                    helpers_text = ", ".join(f"<@{h}>" for h in helpers) if helpers else "None"
+                    lines = embed.description.splitlines()
+                    for i, line in enumerate(lines):
+                        if line.startswith("Helpers:"):
+                            lines[i] = f"Helpers: {helpers_text}"
+                    embed.description = "\n".join(lines)
+                    await msg.edit(embed=embed)
+                    break
+
         await interaction.response.send_message("✅ You joined the ticket.", ephemeral=True)
 
-class SubmitProofButton(Button):
-    def __init__(self, requestor_id):
-        super().__init__(label="Submit Proof", style=discord.ButtonStyle.blurple, custom_id="submit_proof")
-        self.requestor_id = requestor_id
-
-    async def callback(self, interaction: discord.Interaction):
-        if interaction.user.id != self.requestor_id:
-            await interaction.response.send_message("Only the requestor can submit proof.", ephemeral=True)
-            return
-
-        ticket_info = active_tickets.get(interaction.channel.id)
-        if ticket_info["proof_submitted"]:
-            await interaction.response.send_message("Proof already submitted.", ephemeral=True)
-            return
-
-        await interaction.response.send_modal(ProofModal(interaction.channel.id))
 
 # ---------------- CLOSE TICKET ----------------
 class CloseTicketButton(Button):
-    def __init__(self, requestor_id, disabled=True):  # starts disabled
+    def __init__(self, requestor_id, disabled=True):
         super().__init__(label="Close Ticket", style=discord.ButtonStyle.red, custom_id="close_ticket", disabled=disabled)
         self.requestor_id = requestor_id
 
@@ -188,18 +180,15 @@ class CloseTicketButton(Button):
             await interaction.response.send_message("No active ticket found.", ephemeral=True)
             return
 
-        if interaction.user.id == ticket_info["requestor"] and not ticket_info.get("proof_submitted", False):
-            await interaction.response.send_message(
-                "You must submit proof before closing the ticket.",
-                ephemeral=True
-            )
+        if not ticket_info.get("proof_submitted", False):
+            await interaction.response.send_message("You must submit proof before closing the ticket.", ephemeral=True)
             return
 
         if not (interaction.user.id == ticket_info["requestor"] or is_staff(interaction.user) or is_admin(interaction.user)):
             await interaction.response.send_message("Only staff/admin or requestor can close this ticket.", ephemeral=True)
             return
 
-        # Remove helpers/requestor permissions
+        # Remove permissions for helpers/requestor
         for user_id in ticket_info["helpers"] + [ticket_info["requestor"]]:
             if user_id:
                 member = interaction.guild.get_member(user_id)
@@ -211,32 +200,37 @@ class CloseTicketButton(Button):
 
         # Reward helpers
         points = ticket_info.get("points", 5)
+        rewarded_helpers = []
         for helper_id in ticket_info["helpers"]:
             if helper_id:
                 current = await db.get_points(helper_id)
                 await db.set_points(helper_id, current + points)
+                rewarded_helpers.append(helper_id)
 
-# Generate transcript
-transcript_channel = interaction.guild.get_channel(1357314848253542570)
-if transcript_channel:
-    await generate_ticket_transcript(
-        ticket_info, 
-        rewarded=True, 
-        closer_id=interaction.user.id, 
-        destination=transcript_channel
-    )
+        # Generate transcript
+        transcript_channel = interaction.guild.get_channel(1357314848253542570)
+        if transcript_channel:
+            await generate_ticket_transcript(ticket_info, rewarded=True, closer_id=interaction.user.id, destination=transcript_channel)
 
-# Replace embed with closed ticket embed + Delete button
-embed = discord.Embed(
-    title=f"{ticket_info['category']} Ticket (Closed)",
-    description="Ticket closed. Only staff/admin can delete this channel.",
-    color=0x5865F2
-)
-view = DeleteTicketView(interaction.channel.id)
-await interaction.channel.send(embed=embed, view=view)
+        # Create detailed closed ticket embed
+        helpers_text = ", ".join(f"<@{h}>" for h in rewarded_helpers) if rewarded_helpers else "None"
+        proof_text = ticket_info.get("proof", "No proof submitted")
 
-# Remove ticket from active list
-active_tickets.pop(interaction.channel.id, None)
+        embed = discord.Embed(
+            title=f"{ticket_info['category']} Ticket (Closed)",
+            description=f"**Requestor:** <@{ticket_info['requestor']}>\n"
+                        f"**Helpers:** {helpers_text}\n"
+                        f"**Points per helper:** {points}\n"
+                        f"**Proof submitted:** {proof_text}",
+            color=0x5865F2
+        )
+        view = DeleteTicketView(interaction.channel.id)
+        await interaction.channel.send(embed=embed, view=view)
+
+        # Remove ticket from active list
+        active_tickets.pop(interaction.channel.id, None)
+
+        await interaction.response.send_message("✅ Ticket closed successfully.", ephemeral=True)
 
 # ---------------- DELETE BUTTON ----------------
 class DeleteTicketView(View):
@@ -273,12 +267,10 @@ class ProofModal(Modal):
             return
 
         ticket_info["proof_submitted"] = True
-
         proof_url = self.children[0].value or None
         description = self.children[1].value or "—"
         ticket_info["proof"] = proof_url or description
 
-        # Send proof to fixed channel
         proof_channel = interaction.guild.get_channel(1357332638838558862)
         if proof_channel:
             if proof_url:
@@ -288,11 +280,13 @@ class ProofModal(Modal):
             else:
                 await proof_channel.send(f"**Proof submitted by:** {interaction.user.mention}\n**Description:** {description}")
 
-        # Reactivate Close button
-        for child in interaction.message.components[0].children:
-            if child.custom_id == "close_ticket":
-                child.disabled = False
-        await interaction.message.edit(view=interaction.message.components)
+        # Enable Close button
+        if interaction.message.components:
+            for row in interaction.message.components:
+                for child in row.children:
+                    if getattr(child, "custom_id", None) == "close_ticket":
+                        child.disabled = False
+            await interaction.message.edit(view=interaction.message.components)
 
         await interaction.response.send_message(
             "✅ Proof submitted successfully. You can now close the ticket.",
@@ -331,53 +325,55 @@ class TicketModule(commands.Cog):
         )
         await ctx.respond(embed=embed, view=view)
 
-@commands.slash_command(name="ticket_kick", description="Remove a helper from the ticket (staff/admin only)")
-async def ticket_kick(
-    self,
-    ctx: discord.ApplicationContext,
-    member: discord.Option(discord.Member, "Select the helper to remove")
-):
-    # Check permissions
-    if not (is_staff(ctx.user) or is_admin(ctx.user)):
-        await ctx.respond("Only staff/admin can remove helpers.", ephemeral=True)
-        return
+    @commands.slash_command(
+        name="ticket_kick", 
+        description="Remove a helper from the ticket (staff/admin only)"
+    )
+    async def ticket_kick(
+        self,
+        ctx: discord.ApplicationContext,
+        member: discord.Option(discord.Member, "Select the helper to remove")
+    ):
+        # Permission check
+        if not (is_staff(ctx.user) or is_admin(ctx.user)):
+            await ctx.respond("Only staff/admin can remove helpers.", ephemeral=True)
+            return
 
-    ticket_info = active_tickets.get(ctx.channel.id)
-    if not ticket_info:
-        await ctx.respond("This channel is not an active ticket.", ephemeral=True)
-        return
+        ticket_info = active_tickets.get(ctx.channel.id)
+        if not ticket_info:
+            await ctx.respond("This channel is not an active ticket.", ephemeral=True)
+            return
 
-    if member.id not in ticket_info["helpers"]:
-        await ctx.respond(f"{member.mention} is not a helper in this ticket.", ephemeral=True)
-        return
+        if member.id not in ticket_info["helpers"]:
+            await ctx.respond(f"{member.mention} is not a helper in this ticket.", ephemeral=True)
+            return
 
-    # Remove from helpers list
-    ticket_info["helpers"] = [h if h != member.id else None for h in ticket_info["helpers"]]
+        # Remove helper
+        ticket_info["helpers"] = [h if h != member.id else None for h in ticket_info["helpers"]]
 
-    # Revoke permissions
-    try:
-        await ctx.channel.set_permissions(member, overwrite=None)
-    except Exception:
-        pass
+        # Revoke channel permissions
+        try:
+            await ctx.channel.set_permissions(member, overwrite=None)
+        except Exception:
+            pass
 
-    # Update ticket embed
-    for msg in await ctx.channel.history(limit=20).flatten():  # look for ticket embed
-        if msg.embeds:
-            embed = msg.embeds[0]
-            if "Helpers:" in embed.description:
-                helpers = [h for h in ticket_info["helpers"] if h]
-                helpers_text = ", ".join(f"<@{h}>" for h in helpers) if helpers else "None"
-                lines = embed.description.splitlines()
-                for i, line in enumerate(lines):
-                    if line.startswith("Helpers:"):
-                        lines[i] = f"Helpers: {helpers_text}"
-                embed.description = "\n".join(lines)
-                await msg.edit(embed=embed)
-                break
+        # Update ticket embed (if it contains a Helpers: line)
+        async for msg in ctx.channel.history(limit=20):
+            if msg.embeds:
+                embed = msg.embeds[0]
+                if "Helpers:" in embed.description:
+                    helpers = [h for h in ticket_info["helpers"] if h]
+                    helpers_text = ", ".join(f"<@{h}>" for h in helpers) if helpers else "None"
+                    lines = embed.description.splitlines()
+                    for i, line in enumerate(lines):
+                        if line.startswith("Helpers:"):
+                            lines[i] = f"Helpers: {helpers_text}"
+                    embed.description = "\n".join(lines)
+                    await msg.edit(embed=embed)
+                    break
 
-    await ctx.respond(f"✅ {member.mention} has been removed from this ticket.", ephemeral=True)
+        await ctx.respond(f"✅ {member.mention} has been removed from this ticket.", ephemeral=True)
 
 
 def setup(bot):
     bot.add_cog(TicketModule(bot))
-
