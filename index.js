@@ -4,6 +4,7 @@ import { Client, GatewayIntentBits, REST, Routes, Collection } from 'discord.js'
 import dotenv from 'dotenv';
 import BotDatabase from './database.js';
 import { commands } from './commands.js';
+import { startWebServer } from './webserver.js';
 import {
   handleTicketButtonClick,
   handleBossSelection,
@@ -16,6 +17,9 @@ import {
 } from './tickets.js';
 
 dotenv.config();
+
+// START WEBSERVER IMMEDIATELY
+startWebServer();
 
 // Initialize bot
 const client = new Client({
