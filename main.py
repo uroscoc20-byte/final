@@ -1,3 +1,4 @@
+do it go ahead I am owner 
 # main.py
 import discord
 from discord.ext import commands
@@ -33,3 +34,4 @@ def main():
 
 if __name__ == "__main__":
     main()
+
