@@ -1,0 +1,226 @@
+// config.js - Bot Configuration
+
+export const CONFIG = {
+  // Role IDs
+  ROLES: {
+    ADMIN: '1345073680610496602',
+    STAFF: '1374821509268373686',
+    HELPER: '1368925578895429654'
+  },
+
+  // Channel/Category IDs
+  CHANNELS: {
+    TICKET_PANEL: '1358536986679443496',
+    RULES: '1395830522877579304',
+    VERIFICATION_CATEGORY: '1351864881585852479',
+    TICKETS_CATEGORY: '1357314571525816442',
+    TRANSCRIPT: '1357314848253542570'
+  },
+
+  // Custom Emoji
+  CUSTOM_EMOJI: '<:URE:1429522388395233331>',
+
+  // Ticket Categories
+  CATEGORIES: [
+    'UltraSpeaker Express',
+    'Ultra Gramiel Express',
+    'Daily 4-Man Express',
+    'Daily 7-Man Express',
+    'Weekly Ultra Express',
+    'GrimChallenge Express',
+    'Daily Temple Express'
+  ],
+
+  // Category Metadata
+  CATEGORY_METADATA: {
+    'UltraSpeaker Express': {
+      description: 'The First Speaker',
+      prefix: 'UltraSpeaker'
+    },
+    'Ultra Gramiel Express': {
+      description: 'Ultra Gramiel',
+      prefix: 'UltraGramiel'
+    },
+    'Daily 4-Man Express': {
+      description: 'Daily 4-Man Ultra Bosses',
+      prefix: '4Man'
+    },
+    'Daily 7-Man Express': {
+      description: 'Daily 7-Man Ultra Bosses',
+      prefix: '7Man'
+    },
+    'Weekly Ultra Express': {
+      description: 'Weekly Ultra Bosses (excluding speaker, grim and gramiel)',
+      prefix: 'Weekly'
+    },
+    'GrimChallenge Express': {
+      description: 'Mechabinky & Raxborg 2.0',
+      prefix: 'GrimChallenge'
+    },
+    'Daily Temple Express': {
+      description: 'Daily TempleShrine',
+      prefix: 'TempleShrine'
+    }
+  },
+
+  // Helper Slots per Category
+  HELPER_SLOTS: {
+    'GrimChallenge Express': 6,
+    'Daily 7-Man Express': 6,
+    'Weekly Ultra Express': 6,
+    'UltraSpeaker Express': 3,
+    'Ultra Gramiel Express': 3,
+    'Daily 4-Man Express': 3,
+    'Daily Temple Express': 3
+  },
+
+  // Point Values per Category
+  POINT_VALUES: {
+    'GrimChallenge Express': 10,
+    'UltraSpeaker Express': 8,
+    'Weekly Ultra Express': 12,
+    'Daily 7-Man Express': 10,
+    'Daily 4-Man Express': 4,
+    'Daily Temple Express': 6,
+    'Ultra Gramiel Express': 7
+  },
+
+  // Boss Lists
+  DAILY_4MAN_BOSSES: [
+    'UltraEzrajal',
+    'UltraWarden',
+    'UltraEngineer',
+    'UltraTyndarius',
+    'UltraDage',
+    'UltraIara',
+    'UltraKala'
+  ],
+
+  DAILY_7MAN_BOSSES: [
+    'Astralshrine',
+    'KathoolDepths',
+    'Originul',
+    'ApexAzalith',
+    'LichLord',
+    'Beast',
+    'Deimos',
+    'Lavarockshore'
+  ],
+
+  WEEKLY_ULTRA_BOSSES: [
+    'UltraDarkon',
+    'ChampionDrakath',
+    'UltraDage',
+    'UltraNulgath',
+    'UltraDrago'
+  ],
+
+  // Boss-specific join commands for 7-Man
+  BOSS_7MAN_COMMANDS: {
+    'Astralshrine': ['Astralshrine'],
+    'KathoolDepths': ['KathoolDepths'],
+    'Originul': ['VoidFlibbi', 'VoidNightbane', 'VoidXyfrag'],
+    'ApexAzalith': ['ApexAzalith'],
+    'LichLord': ['LichLord'],
+    'Beast': ['SevenCirclesWar'],
+    'Deimos': ['Deimos'],
+    'Lavarockshore': ['Lavarockshore']
+  },
+
+  // Server List
+  SERVERS: [
+    'Swordhaven',
+    'Safiria',
+    'Gravelyn',
+    'Galanoth',
+    'Alteon',
+    'Yorumi'
+  ],
+
+  // Colors (Discord color codes)
+  COLORS: {
+    PRIMARY: 0x5865F2,    // Discord Blurple
+    SUCCESS: 0x57F287,    // Green
+    WARNING: 0xFEE75C,    // Yellow
+    DANGER: 0xED4245,     // Red
+    GOLD: 0xFFD700        // Gold for leaderboard
+  },
+
+  // Hardcoded Commands
+  HARDCODED_COMMANDS: {
+    rrules: {
+      text: `## :inbox_tray: Ticket Rules for Requestors :inbox_tray:
+
+### :crossed_swords: Respect Comes First
+Toxicity, harassment, discrimination, or any disrespectful behavior is not allowed.
+
+### :date: Ticket Opening Limits
+You can open each ticket category only **twice per reset period** — daily categories up to **2 times per day**, and weekly categories up to **2 times per week**.
+
+### :bust_in_silhouette: No Premade Allowed
+You may only open a ticket if you're **alone**. Absolutely no premade teams. **Only Helpers + YOU**
+
+### :closed_lock_with_key: Always Use a Private Room
+Tickets must be opened in a **private room** e.g. \`ultraspeaker-2310\`. If you use a public room number and anyone else is in the room, the ticket is disqualified.
+
+### :performing_arts: Skill Issue ≠ Trolling
+It's okay to be bad. However, **sabotaging the run intentionally** or **trolling** in any form is not tolerated. If it happens multiple times, your ability to open tickets may be revoked. (Proof or staff confirmation is required in any complains). **Always listen to helper's calls**
+
+### :camera_with_flash: You Must Take the Screenshot
+Requestors are **responsible for taking the final screenshot**. If you fail to do this multiple times, you may be banned from opening tickets.
+
+### :scales: Use Common Sense
+Attempting to exploit loopholes or bend the rules for any reason will be punished without mercy.`
+    },
+    hrules: {
+      text: `## :inbox_tray: Ticket Rules for Helpers :inbox_tray:
+
+### :crossed_swords: Respect Comes First
+Toxicity, harassment, discrimination, or any disrespectful behavior is not allowed.
+
+### :no_entry_sign: No Ticket-Hopping
+You **cannot leave a ticket** to join another one for better chances or rewards.
+
+**The only exception:** If your ticket has no available helpers, and another ticket urgently needs help to proceed. In this case, you may assist there so the group can finish and free up helpers for others.
+
+### :robot: Botting = Cheating
+Using bots, scripts, premium clients or whichever automation tools is considered **cheating in-game** and is **not allowed** inside tickets.
+
+### :performing_arts: No Trolling
+Helpers are **not allowed to troll or sabotage** under any circumstance. Unlike requestors, skill issue is **not a valid excuse**. Helpers must be reliable.
+
+Trolling will result in your Helper role being revoked (if confirmed by staff or with valid proof).
+
+### :camera_with_flash: Stay for the Screenshot
+**Leaving before the screenshot means you won't be counted.** Helpers must stay until the very end.
+
+### :scales: Use Common Sense
+Attempting to exploit loopholes or bend the rules for any reason will be punished without mercy.
+
+### :saluting_face: Be a Good Helper
+- Try your best **not to rush other helpers** during tickets. Wait till everyone is ready before beginning the fight.
+- Use **meta classes and proper comps** for fast and reliable clears.
+- **Adjust to comps:**
+  - *Example:* You are phasing the boss at \`/Astralshrine\` and you notice the classes **VDK, LR, LOO, LH, CSS, AF** are already present. **Do not equip VDK** and expect the previous wearer to adjust — **do it yourself!**`
+    },
+    proof: {
+      text: `## :camera_with_flash: Submit Your Proof
+
+After requesting a ticket and completing the objective, make sure to provide proof!
+
+### :x: No Proof = No Points
+
+**1️⃣ Take a screenshot** of the **Helpers' names** and the **quests they completed**.
+
+**2️⃣ Send the screenshot** in your designated proof channel.
+
+### :white_check_mark: Example screenshot below:
+- **Left side:** Available Quests showing **completed quests** in green
+- **Right side:** Users in your area showing **Helper names** and their classes`,
+      image: 'https://cdn.discordapp.com/attachments/1363169040738291872/1408178490662060032/image.png?ex=692ca1ea&is=692b506a&hm=b94d7264eb4552b05d15e9eb37d831cb2a3c0b5141f76f7d26645b10dfd8c567&'
+    }
+  },
+
+  // Bot Settings
+  LEADERBOARD_PER_PAGE: 10
+};
